@@ -12,6 +12,7 @@ We have some sample projects to get you started in these formats:
 * [Dotnet Core 3.1](DotnetCore/README.md)
 * [Dotnet 6](Dotnet6/README.md)
 * [Dotnet 7](Dotnet7/README.md)
+* [Dotnet 10](Dotnet10/README.md)
 * [NodeJS with JavaScript](NodeJS-JavaScript/README.md)
 * [NodeJS with TypeScript](NodeJS-TypeScript/README.md)
 
