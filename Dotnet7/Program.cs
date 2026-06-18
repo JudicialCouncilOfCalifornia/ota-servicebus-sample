@@ -9,34 +9,41 @@ namespace MyNamespace
     {
         static async Task Main(string[] args)
         {
-            string queueName = ConfigurationManager.AppSettings["QueueName"] ?? string.Empty;
-            string serviceBusNamespace = ConfigurationManager.AppSettings["ServiceBusNamespace"] ?? string.Empty;
-
-            var options = new ServiceBusProcessorOptions
+            try
             {
-                // By default or when AutoCompleteMessages is set to true, the processor will complete the message after executing the message handler
-                // Set AutoCompleteMessages to false to [settle messages](https://docs.microsoft.com/en-us/azure/service-bus-messaging/message-transfers-locks-settlement#peeklock) on your own.
-                // In both cases, if the message handler throws an exception without settling the message, the processor will abandon the message.
-                AutoCompleteMessages = false,
-                MaxConcurrentCalls = 1
-            };
+                string queueName = ConfigurationManager.AppSettings["QueueName"] ?? string.Empty;
+                string serviceBusNamespace = ConfigurationManager.AppSettings["ServiceBusNamespace"] ?? string.Empty;
 
-            var nameKeyCredential = GetAzureNamedKeyCredential();
-            await using ServiceBusClient client = new ServiceBusClient(serviceBusNamespace, nameKeyCredential);
-            ServiceBusProcessor processor = client.CreateProcessor(queueName, options);
+                var options = new ServiceBusProcessorOptions
+                {
+                    // By default or when AutoCompleteMessages is set to true, the processor will complete the message after executing the message handler
+                    // Set AutoCompleteMessages to false to [settle messages](https://docs.microsoft.com/en-us/azure/service-bus-messaging/message-transfers-locks-settlement#peeklock) on your own.
+                    // In both cases, if the message handler throws an exception without settling the message, the processor will abandon the message.
+                    AutoCompleteMessages = false,
+                    MaxConcurrentCalls = 1
+                };
 
-            processor.ProcessMessageAsync += MessageHandler;
-            processor.ProcessErrorAsync += ErrorHandler;
+                var nameKeyCredential = GetAzureNamedKeyCredential();
+                await using ServiceBusClient client = new ServiceBusClient(serviceBusNamespace, nameKeyCredential);
+                ServiceBusProcessor processor = client.CreateProcessor(queueName, options);
 
-            await processor.StartProcessingAsync();
-            Console.WriteLine("Service has started.");
+                processor.ProcessMessageAsync += MessageHandler;
+                processor.ProcessErrorAsync += ErrorHandler;
 
-            Console.WriteLine("Press any key to stop processing...");
-            Console.ReadKey();
+                await processor.StartProcessingAsync();
+                Console.WriteLine("Service has started.");
 
-            await processor.StopProcessingAsync();
-            await processor.DisposeAsync();
-            await client.DisposeAsync();
+                Console.WriteLine("Press any key to stop processing...");
+                Console.ReadKey();
+
+                await processor.StopProcessingAsync();
+                await processor.DisposeAsync();
+                await client.DisposeAsync();
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+            }
         }
 
         private static AzureNamedKeyCredential GetAzureNamedKeyCredential()
